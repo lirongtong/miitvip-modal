@@ -1,0 +1,47 @@
+{
+    "compilerOptions": {
+		"target": "esnext",
+		"module": "esnext",
+		"strict": true,
+		"jsx": "preserve",
+		"importHelpers": true,
+		"moduleResolution": "node",
+		"skipLibCheck": true,
+		"strictNullChecks": false,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitAny": false,
+		"noImplicitThis": false,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"declaration": true,
+		"declarationDir": "es",
+		"allowJs": true,
+        "baseUrl": "./",
+        "paths": {
+			"makeit-modal": ["src/index.ts"],
+			"makeit-modal/style": ["src/style.ts"]
+		},
+		"lib": [
+			"esnext",
+			"dom",
+			"es2017",
+			"dom.iterable",
+			"scripthost"
+		]
+	},
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.tsx",
+		"src/**/*.vue"
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+		"lib",
+		"es",
+		"example"
+	]
+}
