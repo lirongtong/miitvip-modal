@@ -1,12 +1,12 @@
 import { App } from 'vue'
-import { default as Captcha } from './modal'
+import { default as Modal } from './modal'
 
 const install = (app: App) => {
-    app.use(Captcha)
+    app.use(Modal)
     return app
 }
 
-export { Captcha }
+export { Modal }
 
 export default {
     version: `${process.env.VERSION}`,

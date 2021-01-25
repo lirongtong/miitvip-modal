@@ -12,10 +12,12 @@
         "vue3",
         "vite",
         "makeit",
+        "makeit admin pro",
         "modal",
         "miitvip",
         "makeit.vip",
         "makeit-modal",
+        "makeit-admin-pro",
         "麦可易特网"
     ],
     "description": "Makeit Modal 弹窗组件，是基于 Vue3.0 + Vite 开发。该组件可以在当前页面打开一个浮层来处理相关事务的某些节点，不影响整个事务的流程。内含多种弹出动效，同时包含快捷弹窗，便于快速处理浮窗提示。",
@@ -48,6 +50,7 @@
     },
     "dependencies": {
         "@ant-design/icons-vue": "^5.1.9",
+        "ant-design-vue": "^2.0.0-rc.9",
         "vue": "^3.0.5",
         "vue-types": "^3.0.1"
     },
