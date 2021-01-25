@@ -12,7 +12,7 @@
 
 <div align="center">
 
-A unified template used to backend management based on Vue3.0 + Ant Design Vue + Vite
+Makeit Modal 弹窗组件，是基于 Vue3.0 + Vite 开发。该组件可以在当前页面打开一个浮层来处理相关事务的某些节点，不影响整个事务的流程。内含多种弹出动效，同时包含快捷弹窗，便于快速处理浮窗提示。
 
 [![npm package](https://img.shields.io/npm/v/makeit-modal.svg?style=flat-square)](https://www.npmjs.org/package/modal)
 [![npm_downloads](http://img.shields.io/npm/dm/makeit-modal.svg?style=flat-square)](http://www.npmtrends.com/makeit-modal)
@@ -20,6 +20,8 @@ A unified template used to backend management based on Vue3.0 + Ant Design Vue +
 ![webpack](https://img.shields.io/badge/webpack-5.17.0-orange.svg)
 ![vue](https://img.shields.io/badge/vue-3.0.5-green.svg)
 ![vite](https://img.shields.io/badge/vite-1.0.0-yellow.svg)
+
+</div>
 
 ## 关于
 
