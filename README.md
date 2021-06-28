@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://admin.makeit.vip/">
-        <img width="200" src="https://file.makeit.vip/MIIT/M00/00/00/ajRkHV7QkoCAeo6PAAARuoXj0Jc275.png">
+        <img width="200" src="https://file.makeit.vip/MIIT/M00/00/00/ajRkHV_pUyOALE2LAAAtlj6Tt_s370.png">
     </a>
 </p>
 
@@ -12,7 +12,7 @@
 
 <div align="center">
 
-Makeit Modal 弹窗组件，是基于 Vue3.0 + Vite 开发。该组件可以在当前页面打开一个浮层来处理相关事务的某些节点，不影响整个事务的流程。内含多种弹出动效，同时包含快捷弹窗，便于快速处理浮窗提示。
+基于 Vue3.x + Vite 开发的弹窗组件 Makeit Modal
 
 [![npm package](https://img.shields.io/npm/v/makeit-modal.svg?style=flat-square)](https://www.npmjs.org/package/modal)
 [![npm_downloads](http://img.shields.io/npm/dm/makeit-modal.svg?style=flat-square)](http://www.npmtrends.com/makeit-modal)
@@ -25,7 +25,7 @@ Makeit Modal 弹窗组件，是基于 Vue3.0 + Vite 开发。该组件可以在�
 
 ## 关于
 
-> Makeit Modal 弹窗组件，是基于 Vue3.0 + Vite 开发。该组件可以在当前页面打开一个浮层来处理相关事务的某些节点，不影响整个事务的流程。内含多种弹出动效，同时包含快捷弹窗，便于快速处理浮窗提示。
+> Makeit Modal 弹窗组件，是基于 Vue3.x + Vite 开发。该组件可以在当前页面打开一个浮层来处理相关事务的某些节点，不影响整个事务的流程。内含多种弹出动效，同时包含快捷弹窗，便于快速处理浮窗提示。
 
 ## 安装
 
