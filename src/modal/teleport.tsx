@@ -1,88 +1,72 @@
-import { defineComponent, Teleport } from 'vue'
-import PropTypes from '../utils/props'
+import { defineComponent, ref, onMounted, onBeforeMount, Teleport, watch } from 'vue'
+import PropTypes from '../utils/props-types'
 
 const windowIsUndefined = !(
     typeof window !== undefined &&
     window.document &&
     window.document.createElement
 )
-let openCount = 0
+
+export const teleportProps = () => ({
+    prefixCls: PropTypes.string,
+    visible: PropTypes.bool,
+    container: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+    children: PropTypes.func,
+    forceRender: PropTypes.bool
+})
 
 export default defineComponent({
     name: 'MiTeleport',
-    props: {
-        visible: PropTypes.bool,
-        container: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
-        children: PropTypes.func,
-        forceRender: PropTypes.bool
-    },
-    data() {
-        const { visible } = this.$props
-        openCount = visible ? openCount + 1 : openCount
-        return {
-            _component: null,
-            _container: null
-        }
-    },
-    watch: {
-        visible(val) {
-            openCount = val ? openCount + 1 : openCount - 1
-        },
-        container(curr, prev) {
-            const containerIsFunc = typeof curr === 'function' && typeof prev === 'function'
-            if (
-                containerIsFunc
-                    ? curr.toString() !== prev.toString()
-                    : curr !== prev
-            ) {
-                this.removeContainer();
+    inheritAttrs: false,
+    props: teleportProps(),
+    setup(props) {
+        const teleportRef = ref(null)
+        const openCount = ref<number>(props.visible ? 1 : 0)
+        const _container = ref(null)
+
+        onBeforeMount(() => removeContainer())
+        onMounted(() => (_container.value = createContainer()))
+
+        watch(
+            () => props.visible,
+            (n) => {
+                openCount.value = n ? openCount.value + 1 : openCount.value - 1
             }
-        }
-    },
-    beforeUnmount() {
-        this.removeContainer();
-    },
-    mounted() {
-        this.createContainer()
-    },
-    methods: {
-        saveTeleport(elem: any) {
-            this._component = elem
-        },
-        getContainer() {
+        )
+        watch(
+            () => props.container,
+            (curr, prev) => {
+                const containerIsFunc = typeof curr === 'function' && typeof prev === 'function'
+                if (containerIsFunc ? curr.toString() !== prev.toString() : curr !== prev)
+                    removeContainer()
+            }
+        )
+
+        const createContainer = () => {
             if (windowIsUndefined) return null
-            const type = typeof this.container
-            if (type === 'function') return this.container()
+            const type = typeof props.container
+            if (type === 'function') return props.container()
             if (type === 'string') {
-                let temp = this.container
+                let temp = props.container
                 if (temp.indexOf('#') === -1) temp = `#${temp}`
                 return document.querySelector(temp)
             }
-            if (
-                type === 'object' &&
-                this.container instanceof window.HTMLElement
-            ) return this.container
+            if (type === 'object' && props.container instanceof window.HTMLElement)
+                return props.container
             return document.body
-        },
-        createContainer() {
-            this._container = this.getContainer()
-            this.$forceUpdate()
-        },
-        removeContainer() {
-            this._container = null
-            this._component = null
         }
-    },
-    render() {
-        const { visible, forceRender, children } = this.$props
-        const childProps = {container: this.getContainer}
-        if (visible || forceRender || this._component) {
-            return (
-                <Teleport to={this._container} ref={this.saveTeleport}>
-                    { children(childProps) }
+
+        const removeContainer = () => {
+            _container.value = null
+        }
+
+        return () => {
+            const childProps = { container: createContainer() }
+            return (props.visible || props.forceRender || teleportRef.value) && _container.value ? (
+                <Teleport to={_container.value} ref={teleportRef}>
+                    {props.children && props.children(childProps)}
                 </Teleport>
-            )
+            ) : null
         }
-        return null
     }
 })

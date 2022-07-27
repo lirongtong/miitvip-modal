@@ -12,11 +12,33 @@ body {
     padding: 64px;
 
     > div {
-        margin-bottom: 24px;
+        margin-bottom: 64px;
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        grid-gap: 24px;
+
+        &:nth-child(2n) {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        &:nth-child(3n) {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     .mrb8 {
         margin-right: 8px;
         margin-bottom: 8px;
+    }
+
+    button,
+    button:hover,
+    button:active,
+    button:focus {
+        background-color: #1d1e23;
+        background-image: linear-gradient(315deg, #000 0%, #434343 74%);
+        color: #f6ca9d;
+        border-color: #f6ca9d;
+        border-radius: 8px;
     }
 }

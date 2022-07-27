@@ -1,4 +1,4 @@
-import Modal from './modal'
+import MiModal from './modal'
 import { install } from '../utils/install'
 
-export default install(Modal, '$miModal')
+export default install(MiModal, '$modal')

@@ -1,5 +1,5 @@
 {
-    "compilerOptions": {
+	"compilerOptions": {
 		"target": "esnext",
 		"module": "esnext",
 		"strict": true,
@@ -20,10 +20,29 @@
 		"declarationDir": "es",
 		"allowJs": true,
 		"resolveJsonModule": true,
-        "baseUrl": "./",
-        "paths": {
-			"makeit-modal": ["src/index.ts"],
-			"makeit-modal/style": ["src/style.ts"]
+		"baseUrl": "./",
+		"paths": {
+			"@/*": [
+				"example/*"
+			],
+			"@views/*": [
+				"example/views/*"
+			],
+			"@images/*": [
+				"example/assets/images/*"
+			],
+			"@src/*": [
+				"src/*"
+			],
+			"@utils/*": [
+				"src/utils/*"
+			],
+			"makeit-modal": [
+				"src/index.ts"
+			],
+			"makeit-modal/style": [
+				"src/style.ts"
+			],
 		},
 		"lib": [
 			"esnext",
@@ -36,13 +55,15 @@
 	"include": [
 		"src/**/*.ts",
 		"src/**/*.tsx",
-		"src/**/*.vue"
+		"src/**/*.vue",
+		"example/**/*"
 	],
 	"exclude": [
 		"node_modules",
 		"dist",
 		"lib",
 		"es",
+		"build",
 		"example"
 	]
 }

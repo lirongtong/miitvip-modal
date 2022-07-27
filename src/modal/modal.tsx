@@ -1,83 +1,86 @@
-import { defineComponent, createVNode } from 'vue'
-import { Button, Modal as AntModal } from 'ant-design-vue'
+import { defineComponent, reactive, createVNode, Plugin } from 'vue'
+import { Button, Modal as AntModal, ModalFuncProps } from 'ant-design-vue'
 import { CloseOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue'
-import { install } from '../utils/install'
-import { getSlot, getSlotContent } from '../utils/props'
-import getModalPropTypes from './props'
-import MiPopup from './popup'
+import { modalProps } from './props'
+import { getPrefixCls, getPropSlot } from '../utils/props-tools'
 import MiTeleport from './teleport'
+import MiPopup from './popup'
+
+export type ModalFunc = (props: ModalFuncProps) => {
+    destroy: () => void
+    update: (newConfig: ModalFuncProps) => void
+}
 
 const Modal = defineComponent({
     name: 'MiModal',
     inheritAttrs: false,
-    props: {...getModalPropTypes()},
+    props: modalProps(),
     emits: ['ok', 'cancel', 'update:visible'],
-    methods: {
-        handleCancel(e: MouseEvent) {
-            this.$emit('update:visible', false)
-            this.$emit('cancel', e)
-        },
-        handleOk(e: MouseEvent) {
-            this.$emit('ok', e)
-        },
-        getPrefixCls(suffixCls: string, customizePrefixCls?: string) {
-            if (customizePrefixCls) return customizePrefixCls
-            return `mi-${suffixCls}`
-        },
-        getDefaultFooter(prefixCls: string) {
+    slots: ['title', 'closeIcon', 'footer', 'okText', 'cancelText'],
+    setup(props, { slots, attrs, emit }) {
+        const prefixCls = getPrefixCls('modal', props.prefixCls)
+
+        const handleOk = (evt: Event) => {
+            emit('ok', evt)
+        }
+
+        const handleCancel = (evt?: Event) => {
+            emit('update:visible', false)
+            emit('cancel', evt)
+        }
+
+        const renderClose = () => {
+            return (
+                <span class={`${prefixCls}-close-x`}>
+                    {getPropSlot(slots, props, 'closeIcon') ?? (
+                        <CloseOutlined class={`${prefixCls}-close-icon`} />
+                    )}
+                </span>
+            )
+        }
+
+        const renderFooter = () => {
             return (
                 <div class={`${prefixCls}-btns`}>
-                    <Button type="default" class={`${prefixCls}-btn`} onClick={this.handleCancel}>
-                        { getSlotContent(this, 'cancelText') || '取消' }
+                    <Button type="default" class={`${prefixCls}-btn`} onClick={handleCancel}>
+                        {getPropSlot(slots, props, 'cancelText') ?? '取消'}
                     </Button>
-                    <Button type="primary" class={`${prefixCls}-btn-primary`} onClick={this.handleOk}>
-                        { getSlotContent(this, 'okText') || '确定' }
+                    <Button type="primary" class={`${prefixCls}-btn-primary`} onClick={handleOk}>
+                        {getPropSlot(slots, props, 'okText') ?? '确定'}
                     </Button>
                 </div>
             )
         }
-    },
-    render() {
-        const {
-            prefixCls: customizePrefixCls,
-            visible,
-            container,
-            forceRender
-        } = this.$props
-        const prefixCls = this.getPrefixCls('modal', customizePrefixCls)
-        const closeIcon = getSlotContent(this, 'closeIcon')
-        const renderCloseIcon = (
-            <span class={`${prefixCls}-close-x`}>
-                { closeIcon || <CloseOutlined class={`${prefixCls}-close-icon`}></CloseOutlined> }
-            </span>
-        )
-        const footer = getSlotContent(this, 'footer')
-        let props = {
-            ...this.$props,
-            ...this.$attrs,
-            prefixCls,
-            title: getSlotContent(this, 'title'),
-            footer: footer === undefined ? this.getDefaultFooter(prefixCls) : footer,
-            closeIcon: renderCloseIcon,
-            cancel: this.handleCancel
+
+        return () => {
+            let propties = reactive({
+                ...props,
+                ...attrs,
+                prefixCls,
+                title: getPropSlot(slots, props, 'title') ?? '温馨提示',
+                footer: getPropSlot(slots, props, 'footer') ?? renderFooter(),
+                closeIcon: renderClose(),
+                onCancel: handleCancel
+            })
+
+            return props.container === false ? (
+                <MiPopup {...propties}>{getPropSlot(slots, props)}</MiPopup>
+            ) : (
+                <MiTeleport
+                    visible={props.visible}
+                    forceRender={props.forceRender}
+                    container={props.container}
+                    children={(child: any) => {
+                        propties = { ...propties, ...child }
+                        return <MiPopup {...propties}>{getPropSlot(slots, props)}</MiPopup>
+                    }}
+                />
+            )
         }
-        if (container === false) {
-            return <MiPopup {...props}>{ getSlot(this) }</MiPopup>
-        }
-        return (
-            <MiTeleport
-                visible={visible}
-                forceRender={forceRender}
-                container={container}
-                children={(child: any) => {
-                    props = {...props, ...child}
-                    return <MiPopup {...props}>{ getSlot(this) }</MiPopup>
-                }}
-            />
-        )
     }
 })
-const prefixCls = 'mi-modal'
+
+const prefixCls = getPrefixCls('modal')
 const defaultConfig = {
     centered: true,
     keyboard: true,
@@ -86,34 +89,59 @@ const defaultConfig = {
     width: 360,
     okText: '知道了'
 }
-Modal.success = (config: {}) => {
-    const configuration = Object.assign({}, defaultConfig, {
-        class: `${prefixCls}-success`
-    }, config)
-    AntModal.success(configuration)
+
+const mergeConfig = (config: string | {}, type: string) => {
+    if (typeof config === 'string') config = { content: config }
+    return Object.assign(
+        {},
+        defaultConfig,
+        {
+            class: `${prefixCls}-${type}`
+        },
+        config
+    )
 }
-Modal.error = (config: {}) => {
-    const configuration = Object.assign({}, defaultConfig, {
-        class: `${prefixCls}-error`
-    }, config)
-    AntModal.error(configuration)
+
+Modal.info = (config: string | {}) => {
+    AntModal.info(mergeConfig(config, 'info'))
 }
-Modal.warning = (config: {}) => {
-    const configuration = Object.assign({}, defaultConfig, {
-        class: `${prefixCls}-warning`
-    }, config)
-    AntModal.warning(configuration)
+
+Modal.success = (config: string | {}) => {
+    AntModal.success(mergeConfig(config, 'success'))
 }
-Modal.confirm = (config: {}) => {
-    const configuration = Object.assign({}, defaultConfig, {
-        class: `${prefixCls}-confirm`,
+
+Modal.error = (config: string | {}) => {
+    AntModal.error(mergeConfig(config, 'error'))
+}
+
+Modal.warn = (config: string | {}) => {
+    AntModal.warning(mergeConfig(config, 'warning'))
+}
+
+Modal.warning = (config: string | {}) => {
+    AntModal.warning(mergeConfig(config, 'warning'))
+}
+
+Modal.confirm = (config: string | {}) => {
+    const configuration = Object.assign({}, mergeConfig(config, 'confirm'), {
+        icon: createVNode(QuestionCircleOutlined),
         okText: '确定',
-        cancelText: '取消',
-        icon: createVNode(QuestionCircleOutlined)
-    }, config)
+        cancelText: '取消'
+    })
     AntModal.confirm(configuration)
 }
+
 Modal.destroyAll = () => {
     AntModal.destroyAll()
 }
-export default install(Modal)
+
+export default Modal as typeof Modal &
+    Plugin & {
+        readonly info: ModalFunc
+        readonly success: ModalFunc
+        readonly error: ModalFunc
+        readonly warn: ModalFunc
+        readonly warning: ModalFunc
+        readonly confirm: ModalFunc
+        readonly destroyAll: ModalFunc
+    }

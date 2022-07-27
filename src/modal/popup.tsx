@@ -1,172 +1,109 @@
-import { defineComponent, Transition, VNode, vShow, withDirectives } from 'vue'
-import getModalPropTypes from './props'
-import { getSlot } from '../utils/props'
+import { defineComponent, Transition, ref } from 'vue'
+import { $tools } from '../utils/tools'
+import { getPrefixCls, getPropSlot } from '../utils/props-tools'
+import { modalProps } from './props'
 
 export default defineComponent({
     name: 'MiPopup',
     inheritAttrs: false,
-    props: {...getModalPropTypes()},
-    mounted() {
-        this.$nextTick(() => {
-            if ((this.forceRender || (this.container === false && !this.visible)) && this.$refs.wrap) {
-                this.$refs.wrap.style.display = 'none'
-            }
-        })
-    },
-    methods: {
-        close(e: MouseEvent) {
-            this.emit('cancel', e)
-        },
-        emit(...params: any) {
-            const args = [].slice.call(params, 0)
-            const eventName = args[0]
-            const event = this.$props[eventName] || this.$attrs[eventName]
-            if (args.length && event) {
-                if (Array.isArray(event)) {
-                    for (let i = 0, l = event.length; i < l; i++) {
-                        event[i](...args.slice(1))
-                    }
-                } else {
-                    event(...args.slice(1))
-                }
-            }
-        },
-        handleAnimAfterLeave() {
-            const { afterClose } = this
-            if (this.$refs.wrap) this.$refs.wrap.style.display = 'none'
-            if (afterClose) afterClose()
-        },
-        handleWrapClick() {
-            if (this.mask && this.maskClosable) this.close()
-        },
-        getZIndex() {
-            const style: any = {}
-            const props = this.$props
-            if (props.zIndex !== undefined) style.zIndex = props.zIndex
-            return style
-        },
-        getWrapClass() {
-            const { prefixCls, placement, wrapClass } = this.$props
-            let classes = `${prefixCls}-wrap`
-            if (placement !== undefined) classes += ` ${placement}`
-            if (wrapClass !== undefined) {
-                if (Array.isArray(wrapClass)) classes += ` ${wrapClass.join(' ')}`
-                else classes += ` ${wrapClass}`
-            }
-            return classes
-        },
-        getWrapStyle() {
-            return {...this.getZIndex()}
-        },
-        getMaskStyle() {
-            return {...this.getZIndex(), ...this.maskStyle}
-        },
-        getMaskElem() {
-            let maskElem: any = null
-            if (this.mask) {
-                maskElem = (
-                    <Transition key="mask" name="mi-fade" appear>
-                        { withDirectives((
-                            <div
-                                class={`${this.prefixCls}-mask`}
-                                style={this.getMaskStyle()}
-                                onClick={this.close}
-                                key="mask">
-                            </div>
-                        ) as VNode, [[vShow, this.visible]]) }
-                    </Transition>
-                )
-            }
-            return maskElem
-        },
-        getModalElem() {
-            const {
-                prefixCls,
-                title,
-                footer: footerProp,
-                width,
-                height,
-                closable,
-                closeIcon
-            } = this.$props
+    props: modalProps(),
+    emits: ['cancel'],
+    setup(props, { slots, emit }) {
+        const modalAnim = getPrefixCls(`anim-${props.animation}`)
+        const modalKey = getPrefixCls(`${props.prefixCls}-${$tools.uid()}`)
+        const maskAnim = getPrefixCls('anim-fade')
+        const wrapRef = ref(null)
+        const headerRef = ref(null)
+        const footerRef = ref(null)
 
-            const style: any = {}
-            if (width !== undefined) {
-                style.width = typeof width === 'number'
-                    ? `${Math.round(width / 16)}rem`
-                    : width
-            }
-            if (height !== undefined) {
-                style.height = typeof height === 'number'
-                    ? `${Math.round(height / 16)}rem`
-                    : height
-            }
-
-            let header: any
-            if (title) {
-                header = (
-                    <div
-                        class={`${prefixCls}-header`}
-                        key="heaader"
-                        ref="header">{ title }
-                    </div>
-                )
-            }
-
-            let footer: any
-            if (footerProp) {
-                footer = (
-                    <div
-                        class={`${prefixCls}-footer`}
-                        key="footer"
-                        ref="footer">{ footerProp }
-                    </div>
-                )
-            }
-
-            let closer: any
-            if (closable) {
-                closer = (
-                    <button
-                        type="button"
-                        onClick={this.close}
-                        key="close"
-                        aria-label="close"
-                        class={`${prefixCls}-close`}>
-                        { closeIcon || <span class={`${prefixCls}-close-x`}></span> }
-                    </button>
-                )
-            }
-
-            const modalElem = (
-                <Transition
-                    key="content"
-                    name={`mi-${this.animation}`}
-                    onAfterLeave={this.handleAnimAfterLeave}
-                    appear>
-                    { withDirectives((
-                        <div class={`${prefixCls}-content`} style={style}>
-                            { closer }
-                            { header }
-                            <div class={`${prefixCls}-body`} key="body" ref="body">{ getSlot(this) }</div>
-                            { footer }
-                        </div>
-                    ) as VNode, [[vShow, this.visible]]) }
-                </Transition>
-            )
-            return modalElem
+        const handleCloseClick = (evt?: Event) => {
+            emit('cancel', evt)
         }
-    },
-    render() {
-        const { prefixCls } = this.$props
-        const style = this.getWrapStyle()
-        if (this.visible) style.display = null
-        return (
-            <div class={`${prefixCls} ${prefixCls}-anim-${this.animation}`} role="modal">
-                { this.getMaskElem() }
-                <div class={this.getWrapClass()} ref="wrap" style={style} onClick={this.handleWrapClick}>
-                    { this.getModalElem() }
+
+        const handleWrapClick = () => {
+            if (props.mask && props.maskClosable) handleCloseClick()
+        }
+
+        const handleAnimAfterLeave = () => {
+            if (props.afterClose) props.afterClose()
+        }
+
+        const getWrapClass = () => {
+            let cls = `${props.prefixCls}-wrap`
+            if (props.placement !== undefined) cls += ` ${props.placement}`
+            if (props.wrapClass !== undefined) {
+                if (Array.isArray(props.wrapClass)) cls += ` ${props.wrapClass.join(' ')}`
+                else cls += ` ${props.wrapClass}`
+            }
+            return cls
+        }
+
+        const renderMask = () => {
+            return props.mask ? (
+                <Transition name={maskAnim} appear={true}>
+                    <div
+                        class={`${props.prefixCls}-mask`}
+                        style={{ zIndex: props.zIndex ?? null, ...props.maskStyle }}
+                        onClick={handleCloseClick}
+                        v-show={props.visible}
+                    />
+                </Transition>
+            ) : null
+        }
+
+        const renderModal = () => {
+            const style = {
+                width: props.width ? $tools.convert2Rem(props.width) : null,
+                height: props.height ? $tools.convert2Rem(props.height) : null
+            }
+            const header = props.title ? (
+                <div
+                    class={`${props.prefixCls}-header`}
+                    key={`${props.prefixCls}-header`}
+                    ref={headerRef}>
+                    {props.title}
                 </div>
+            ) : null
+            const footers = props.footer ? (
+                <div
+                    class={`${props.prefixCls}-footer`}
+                    key={`${props.prefixCls}-footer`}
+                    ref={footerRef}>
+                    {props.footer}
+                </div>
+            ) : null
+            const closer = props.closable ? (
+                <button
+                    type="button"
+                    onClick={handleCloseClick}
+                    key={`${props.prefixCls}-close`}
+                    class={`${props.prefixCls}-close`}>
+                    {props.closeIcon}
+                </button>
+            ) : null
+            return (
+                <div class={`${props.prefixCls}-content`} style={style}>
+                    {closer}
+                    {header}
+                    <div class={`${props.prefixCls}-body`}>{getPropSlot(slots, props)}</div>
+                    {footers}
+                </div>
+            )
+        }
+
+        return () => (
+            <div class={`${props.prefixCls}`} key={modalKey}>
+                {renderMask()}
+                <Transition name={modalAnim} onAfterLeave={handleAnimAfterLeave} appear>
+                    <div
+                        class={getWrapClass()}
+                        ref={wrapRef}
+                        style={{ zIndex: props.zIndex ?? null }}
+                        onClick={handleWrapClick}
+                        v-show={props.visible}>
+                        {renderModal()}
+                    </div>
+                </Transition>
             </div>
         )
     }
